@@ -1,0 +1,21 @@
+{
+    "name": "wp-fundi/roduza-helper",
+    "description": "A demo plugin for block bindings in WordPress.",
+    "type": "wordpress-plugin",
+    "license": "GPL-2.0-or-later",
+    "authors": [
+        {
+            "name": "Chris",
+            "email": "chrisocen4@gmail.com"
+        }
+    ],
+    "config": {
+        "vendor-dir": "lib"
+    },
+    "require": {},
+    "autoload": {
+        "psr-4": {
+            "roduza_helper\\": "./core"
+        }
+    }
+}
