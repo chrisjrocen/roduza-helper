@@ -1,5 +1,7 @@
 <?php
 /**
+ * Initialization class for the Roduza Helper plugin.
+ *
  * @package roduza_helper
  */
 
@@ -21,6 +23,7 @@ final class Init {
 	public static function get_services() {
 		return array(
 			Admin\RoduzaHelper::class,
+			Blocks\MosaicGallery::class,
 		);
 	}
 

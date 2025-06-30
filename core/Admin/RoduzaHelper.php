@@ -1,5 +1,7 @@
 <?php
 /**
+ * Roduza Helper Admin Class
+ *
  * @package roduza_helper
  */
 

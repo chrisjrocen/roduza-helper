@@ -1,5 +1,7 @@
 <?php
 /**
+ * BaseController.php
+ *
  * @package roduza_helper
  */
 
@@ -38,8 +40,8 @@ class BaseController {
 	 * The plugin basename.
 	 */
 	public function __construct() {
-		$this->plugin_path = plugin_dir_path( dirname( __DIR__, 1 ) );
-		$this->plugin_url  = plugin_dir_url( dirname( __DIR__, 1 ) );
+		$this->plugin_path = trailingslashit( plugin_dir_path( dirname( __DIR__, 1 ) ) );
+		$this->plugin_url  = trailingslashit( plugin_dir_url( dirname( __DIR__, 1 ) ) );
 		$this->plugin_slug = plugin_basename( dirname( __DIR__, 2 ) ) . '/roduza-helper.php';
 	}
 }

@@ -1,0 +1,36 @@
+{
+    "name": "mosaic-gallery",
+    "version": "2.0.1",
+    "description": "Plugin with funcitonality for Roduza Collections",
+    "main": "index.js",
+    "scripts": {
+        "slot-start": "wp-scripts start --webpack-src-dir=admin/slotfill --output-path=assets/js/slotfill",
+        "slot-build": "wp-scripts build --webpack-src-dir=admin/slotfill --output-path=assets/js/slotfill",
+        "admin-start": "wp-scripts start --webpack-src-dir=admin/pre-publish-checks --output-path=assets/js/pre-publish-checks",
+        "admin-build": "wp-scripts build --webpack-src-dir=admin/pre-publish-checks --output-path=assets/js/pre-publish-checks",
+        "opt-start": "wp-scripts start --webpack-src-dir=admin/options --output-path=assets/js/admin",
+        "opt-build": "wp-scripts build --webpack-src-dir=admin/options --output-path=assets/js/admin",
+        "start": "wp-scripts start --webpack-src-dir=blocks --output-path=build",
+        "build": "wp-scripts build --webpack-src-dir=blocks --output-path=build",
+        "plugin-zip": "wp-scripts plugin-zip"
+    },
+    "devDependencies": {
+        "@wordpress/components": "^29.4.0",
+        "@wordpress/core-data": "^7.18.0",
+        "@wordpress/data": "^10.18.0",
+        "@wordpress/icons": "^10.17.0",
+        "@wordpress/notices": "^5.18.0",
+        "@wordpress/scripts": "^30.11.0",
+        "@10up/block-components": "^1.20.1",
+        "path": "^0.12.7",
+        "webpack-remove-empty-scripts": "^1.0.4"
+    },
+    "files": [
+        "roduza-helper.php",
+        "admin",
+        "assets",
+        "build",
+        "lib",
+        "core"
+    ]
+}
