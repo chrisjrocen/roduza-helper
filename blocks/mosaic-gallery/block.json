@@ -11,7 +11,20 @@
     "html": false,
     "reusable": true
   },
-  
+    "attributes": {
+    "numberOfItems": {
+      "type": "number",
+      "default": 4
+    },
+    "categoryToDisplay": {
+      "type": "string",
+      "default": "collections"
+    },
+    "headingColor": {
+      "type": "string",
+      "default": "#000"
+    }
+  },
   "textdomain": "roduza-helper",
   "editorScript": "file:./index.js",
   "editorStyle": "file:./index.css",

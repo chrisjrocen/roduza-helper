@@ -1,15 +1,188 @@
-.wp-block-roduza-helper-mosaic-gallery {
-    padding: 1em;
-    border: 1px dashed #ccc;
-    .business-hours-preview-list {
-        list-style: none;
-        padding-left: 0;
-        font-size: 0.9em;
-        li {
-            margin-bottom: 0.3em;
-        }
+:root {
+    --roduza-collection-default-font: "Baskervville", Sans-serif;
+
+}
+
+// Shared styles for both front-end and editor
+#modal-content-container {
+    color: black;
+    font-family: var(--roduza-collection-default-font);
+
+    h2 {
+        color: black;
+        font-family: inherit;
+        font-weight: 400;
+        text-align: left;
     }
-    .components-placeholder {
-        min-height: 80px;
+}
+
+#collection-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 9999;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    overflow: auto;
+    padding: 2rem;
+}
+
+.modal-inner {
+    background: #fff;
+    padding: 2rem;
+    border-radius: 8px;
+    max-width: 100%;
+    margin: auto;
+    height: 100%;
+    width: 100%;
+    max-height: 100vh;
+    overflow-y: auto;
+    position: relative;
+    box-sizing: border-box;
+
+    img {
+        max-width: 100%;
+        height: auto;
+        display: block;
+        margin-bottom: 1rem;
     }
+}
+
+.close-modal {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 3.5rem;
+    color: black;
+}
+
+.modal-image-container {
+    display: flex;
+    justify-content: center;
+}
+
+// Mosaic Grid
+.collections-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.collection-item {
+    text-align: center;
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    overflow: hidden;
+    background: #fff;
+    transition: transform 0.2s ease;
+
+    &:hover {
+        transform: scale(1.02);
+    }
+}
+
+.collection-thumb img {
+    width: 100%;
+    height: auto;
+}
+
+.collection-title {
+    padding: 1rem;
+    font-size: 1.1rem;
+    font-weight: bold;
+}
+
+// Footer store icons
+.footer-store-icons {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+
+    img {
+        flex: 0 0 45%;
+        max-width: 45%;
+    }
+}
+
+// Typography
+#modal-content-container h2,
+h3#collection-material {
+    font-family: var(--roduza-collection-default-font);
+    font-weight: 400;
+    text-align: left;
+    color: black;
+}
+
+article.post {
+    font-family: var(--roduza-collection-default-font);
+    font-weight: 400;
+    text-align: center;
+}
+
+.ct-media-container img,
+.ct-media-container picture {
+    object-fit: contain;
+}
+
+h1.page-title {
+    font-weight: 800;
+}
+
+// Carousel
+.carousel-modal-container {
+    position: relative;
+    width: 100%;
+    margin: auto;
+}
+
+.carousel-slides {
+    position: relative;
+}
+
+.carousel-slide {
+    display: none;
+    transition: all 0.3s ease-in-out;
+}
+
+.carousel-nav {
+    position: absolute;
+    top: 50%;
+    font-size: 2rem;
+    background: grey;
+    border: none;
+    color: #333;
+    cursor: pointer;
+    z-index: 10;
+    width: 3rem;
+    border-radius: 2rem;
+
+    &.prev {
+        left: 0;
+    }
+
+    &.next {
+        right: 0;
+    }
+}
+
+// Collection meta link
+li#collections-meta>a {
+    color: black;
+    font-size: 20px;
+    line-height: 1.3;
+    text-transform: capitalize;
+    font-family: var(--roduza-collection-default-font);
+}
+
+// Archive card background
+[data-prefix="collections_archive"] .entry-card {
+    background-color: transparent;
+}
+
+// Modal link style
+a.open-collection-modal {
+    font-style: italic;
 }
