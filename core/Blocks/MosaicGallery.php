@@ -103,7 +103,7 @@ class MosaicGallery extends BaseController {
 			while ( $collection_query->have_posts() ) {
 				$collection_query->the_post();
 				ob_start();
-				get_template_part( 'template-parts/content', 'collection' );
+				get_template_part( 'template-parts/content', 'collection', array( 'heading_color' => $heading_color ) );
 				$entries_html .= ob_get_clean();
 			}
 
