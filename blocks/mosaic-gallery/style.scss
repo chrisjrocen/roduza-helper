@@ -133,41 +133,9 @@ h1.page-title {
     font-weight: 800;
 }
 
-// Carousel
-.carousel-modal-container {
-    position: relative;
+// Modal content for single item display
+.modal-content-single {
     width: 100%;
-    margin: auto;
-}
-
-.carousel-slides {
-    position: relative;
-}
-
-.carousel-slide {
-    display: none;
-    transition: all 0.3s ease-in-out;
-}
-
-.carousel-nav {
-    position: absolute;
-    top: 50%;
-    font-size: 2rem;
-    background: grey;
-    border: none;
-    color: #333;
-    cursor: pointer;
-    z-index: 10;
-    width: 3rem;
-    border-radius: 2rem;
-
-    &.prev {
-        left: 0;
-    }
-
-    &.next {
-        right: 0;
-    }
 }
 
 // Collection meta link

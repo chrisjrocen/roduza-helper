@@ -2,12 +2,12 @@
 /**
  * Plugin Name:     Roduza Helper
  * Plugin URI:      https://www.ocenchris.com
- * Description:     A demo plugin to show how to use block bindings in WordPress.
+ * Description:     Heleper plugin to add functionality to Roduza Collection site.
  * Author:          Ocen Chris
  * Author URI:      https://www.ocenchris.com
  * Text Domain:     roduza-helper
  * Domain Path:     /languages
- * Version:         1.0.0
+ * Version:         2.0.0
  *
  * @package roduza_helper
  */
