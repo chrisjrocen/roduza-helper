@@ -140,117 +140,64 @@ class MosaicGallery extends BaseController {
 			echo 'Post ID not set.';
 			wp_die();
 		}
-		$post_id  = intval( $_POST['post_id'] );
-		$taxonomy = 'collection-category';
+		$post_id = intval( $_POST['post_id'] );
 
-		if ( $post_id && taxonomy_exists( $taxonomy ) ) {
+		$post = get_post( $post_id );
+		if ( ! $post || 'collections' !== $post->post_type ) {
+			echo 'Invalid post.';
+			wp_die();
+		}
+
+		setup_postdata( $post );
+
+		$taxonomy = 'collection-category';
+		if ( taxonomy_exists( $taxonomy ) ) {
 			$terms = wp_get_post_terms( $post_id, $taxonomy );
 			if ( ! is_wp_error( $terms ) && ! empty( $terms ) ) {
 				$first_term = $terms[0];
 				echo esc_html( $first_term->name );
-			} else {
-				echo 'No terms found or an error occurred.';
-			}
-		} else {
-			echo 'Invalid post ID or taxonomy.';
-		}
-
-		$collection_ids = array();
-		if ( isset( $first_term ) && isset( $first_term->term_id ) ) {
-			$collection_ids = get_objects_in_term( $first_term->term_id, $taxonomy );
-			if ( ! empty( $collection_ids ) ) {
-				$collection_ids        = array_map( 'intval', $collection_ids );
-				$cache_key             = 'collection_ids_sorted_' . md5( implode( ',', $collection_ids ) );
-				$sorted_collection_ids = wp_cache_get( $cache_key, 'custom' );
-
-				if ( false === $sorted_collection_ids ) {
-					$query                 = new \WP_Query(
-						array(
-							'post_type'      => 'collections',
-							'post__in'       => $collection_ids,
-							'orderby'        => 'date',
-							'order'          => 'DESC',
-							'posts_per_page' => -1,
-							'fields'         => 'ids',
-						)
-					);
-					$sorted_collection_ids = $query->posts;
-					wp_cache_set( $cache_key, $sorted_collection_ids, 'custom', 300 );
-				}
-
-				$collection_ids = $sorted_collection_ids;
 			}
 		}
 
-		if ( empty( $collection_ids ) ) {
-			echo 'No collections found.';
-			wp_die();
-		}
-
-		$collections = array();
-		foreach ( $collection_ids as $cid ) {
-			$collections[] = get_post( $cid );
-		}
-
-		$slides_html = '';
-		foreach ( $collections as $post ) {
-			setup_postdata( $post );
-			$active_class = ( $post->ID === $post_id ) ? 'active' : '';
-
-			$image_html = '';
-			if ( has_post_thumbnail( $post ) ) {
-				$image_html = sprintf(
-					'<div class="modal-image-container">%s</div>',
-					get_the_post_thumbnail( $post, '', array( 'style' => 'max-height:80vh; width:auto;' ) )
-				);
-			}
-
-			$the_title    = get_the_title( $post );
-			$the_year     = get_field( 'year', $post->ID );
-			$the_material = get_field( 'material', $post->ID );
-			$artists      = get_the_terms( $post, 'artist' );
-			$the_artist   = ( ! empty( $artists ) && ! is_wp_error( $artists ) ) ? esc_html( $artists[0]->name ) : '';
-
-			$title_html = sprintf(
-				'<h2 id="modal-title"><span id="collection-name">%s</span>%s%s</h2>',
-				esc_html( $the_title ),
-				$the_year ? ' <span id="collection-year">(' . esc_html( $the_year ) . ')</span>' : '',
-				$the_artist ? ', <span id="collection-artist">' . $the_artist . '</span>' : ''
-			);
-
-			$material_html = $the_material
-				? sprintf( '<h3 id="collection-material">(%s)</h3>', esc_html( $the_material ) )
-				: '';
-
-			$content_html = sprintf(
-				'<div class="content-collection">%s</div>',
-				wp_kses_post( apply_filters( 'the_content', get_the_content( null, false, $post ) ) )
-			);
-
-			$slides_html .= sprintf(
-				'<div class="carousel-slide %s" data-post-id="%d" style="display: %s;">%s%s%s%s</div>',
-				esc_attr( $active_class ),
-				$post->ID,
-				$active_class ? 'block' : 'none',
-				$image_html,
-				$title_html,
-				$material_html,
-				$content_html
+		$image_html = '';
+		if ( has_post_thumbnail( $post ) ) {
+			$image_html = sprintf(
+				'<div class="modal-image-container">%s</div>',
+				get_the_post_thumbnail( $post, '', array( 'style' => 'max-height:80vh; width:auto;' ) )
 			);
 		}
 
-		$carousel_html = sprintf(
-			'<div class="carousel-modal-container">
-				<div class="carousel-slides">%s</div>
-				<div id="slider-buttons">
-					<button class="carousel-nav prev" onclick="showPrevSlide()">&#10094;</button>
-					<button class="carousel-nav next" onclick="showNextSlide()">&#10095;</button>
-				</div>
-			</div>',
-			$slides_html
+		$the_title    = get_the_title( $post );
+		$the_year     = get_field( 'year', $post->ID );
+		$the_material = get_field( 'material', $post->ID );
+		$artists      = get_the_terms( $post, 'artist' );
+		$the_artist   = ( ! empty( $artists ) && ! is_wp_error( $artists ) ) ? esc_html( $artists[0]->name ) : '';
+
+		$title_html = sprintf(
+			'<h2 id="modal-title"><span id="collection-name">%s</span>%s%s</h2>',
+			esc_html( $the_title ),
+			$the_year ? ' <span id="collection-year">(' . esc_html( $the_year ) . ')</span>' : '',
+			$the_artist ? ', <span id="collection-artist">' . $the_artist . '</span>' : ''
 		);
 
-		echo $carousel_html;
+		$material_html = $the_material
+			? sprintf( '<h3 id="collection-material">(%s)</h3>', esc_html( $the_material ) )
+			: '';
+
+		$content_html = sprintf(
+			'<div class="content-collection">%s</div>',
+			wp_kses_post( apply_filters( 'the_content', get_the_content( null, false, $post ) ) )
+		);
+
+		$modal_html = sprintf(
+			'<div class="modal-content-single">%s%s%s%s</div>',
+			$image_html,
+			$title_html,
+			$material_html,
+			$content_html
+		);
+
+		echo $modal_html;
 
 		wp_reset_postdata();
 		wp_die();
