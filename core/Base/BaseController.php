@@ -36,6 +36,13 @@ class BaseController {
 	 */
 	public $plugin_slug;
 
+    /**
+	 * The version of the plugin.
+	 *
+	 * @var string
+	 */
+	public $plugin_version;
+
 	/**
 	 * The plugin basename.
 	 */
@@ -43,5 +50,6 @@ class BaseController {
 		$this->plugin_path = trailingslashit( plugin_dir_path( dirname( __DIR__, 1 ) ) );
 		$this->plugin_url  = trailingslashit( plugin_dir_url( dirname( __DIR__, 1 ) ) );
 		$this->plugin_slug = plugin_basename( dirname( __DIR__, 2 ) ) . '/roduza-helper.php';
+		$this->plugin_version = '2.0.0';
 	}
 }

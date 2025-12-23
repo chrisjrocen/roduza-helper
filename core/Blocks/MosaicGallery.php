@@ -48,13 +48,15 @@ class MosaicGallery extends BaseController {
 		wp_enqueue_style(
 			'roduza-helper-mosaic-gallery-styles',
 			$this->plugin_url . 'build/mosaic-gallery/style-index.css',
-			array()
+			array(),
+			$this->plugin_version
 		);
 
 		wp_enqueue_script(
 			'roduza-helper-mosaic-gallery-script',
 			$this->plugin_url . 'assets/js/scripts.js',
 			array(),
+			$this->plugin_version,
 			true
 		);
 	}
@@ -118,7 +120,7 @@ class MosaicGallery extends BaseController {
 		} else {
 			$gallery_html = sprintf(
 				'<div class="no-collections"><p>%s</p></div>',
-				esc_html__( 'No collections found.', 'blocksy' )
+				esc_html__( 'No collections found.', 'roduza-helper' )
 			);
 		}
 
@@ -197,7 +199,7 @@ class MosaicGallery extends BaseController {
 			$content_html
 		);
 
-		echo $modal_html;
+		echo wp_kses_post( $modal_html );
 
 		wp_reset_postdata();
 		wp_die();

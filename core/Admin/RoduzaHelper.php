@@ -7,10 +7,12 @@
 
 namespace roduza_helper\Admin;
 
+use roduza_helper\Base\BaseController;
+
 /**
  * The RoduzaHelper class for the plugin.
  */
-class RoduzaHelper {
+class RoduzaHelper extends BaseController {
 
 	/**
 	 * Registers the custom meta field for the 'post' post type.
