@@ -14,7 +14,7 @@
   "attributes": {
     "numberOfItems": {
       "type": "number",
-      "default": 4
+      "default": 1000
     },
     "categoryToDisplay": {
       "type": "string",
