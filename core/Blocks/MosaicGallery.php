@@ -13,6 +13,14 @@ use roduza_helper\Base\BaseController;
  * Class to handle the Mosaic Gallery Block.
  */
 class MosaicGallery extends BaseController {
+
+	/**
+	 * REST namespace for the collection modal endpoint.
+	 *
+	 * @var string
+	 */
+	const REST_NAMESPACE = 'roduza-helper/v1';
+
 	/**
 	 * Register function is called by default to get the class running.
 	 *
@@ -20,13 +28,14 @@ class MosaicGallery extends BaseController {
 	 */
 	public function register() {
 		add_action( 'init', array( $this, 'create_mosaic_gallery_block' ) );
-		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_frontend_mosaic_gallery_script' ) );
-		add_action( 'wp_ajax_load_collection_modal', array( $this, 'load_collection_modal_callback' ) );
-		add_action( 'wp_ajax_nopriv_load_collection_modal', array( $this, 'load_collection_modal_callback' ) );
+		add_action( 'rest_api_init', array( $this, 'register_rest_routes' ) );
 	}
 
 	/**
 	 * Register block function called by init hook.
+	 *
+	 * Styles and the front-end view script are declared in block.json, so they
+	 * only load on pages that contain the block.
 	 *
 	 * @return void
 	 */
@@ -40,24 +49,25 @@ class MosaicGallery extends BaseController {
 	}
 
 	/**
-	 * Enqueue script for frontend open/closed status.
+	 * Register the REST route that returns a single collection's modal HTML.
 	 *
 	 * @return void
 	 */
-	public function enqueue_frontend_mosaic_gallery_script() {
-		wp_enqueue_style(
-			'roduza-helper-mosaic-gallery-styles',
-			$this->plugin_url . 'build/mosaic-gallery/style-index.css',
-			array(),
-			$this->plugin_version
-		);
-
-		wp_enqueue_script(
-			'roduza-helper-mosaic-gallery-script',
-			$this->plugin_url . 'assets/js/scripts.js',
-			array(),
-			$this->plugin_version,
-			true
+	public function register_rest_routes() {
+		register_rest_route(
+			self::REST_NAMESPACE,
+			'/collection/(?P<id>\d+)',
+			array(
+				'methods'             => \WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'get_collection_modal' ),
+				'permission_callback' => '__return_true',
+				'args'                => array(
+					'id' => array(
+						'required'          => true,
+						'sanitize_callback' => 'absint',
+					),
+				),
+			)
 		);
 	}
 
@@ -68,39 +78,41 @@ class MosaicGallery extends BaseController {
 	 * @return string Rendered block content.
 	 */
 	public function render_mosaic_gallery_block( $attributes ) {
-
-		do_action( 'qm/debug', $attributes );
-
 		$the_category  = $attributes['categoryToDisplay'] ?? '';
-		$no_to_show    = $attributes['numberOfItems'] ?? 0;
-		$heading_color = $attributes['headingColor'] ?? '#000';
-
-		$term    = get_term_by( 'slug', $the_category, 'collection-category' );
-		$term_id = $term ? $term->term_id : 0;
+		$no_to_show    = absint( $attributes['numberOfItems'] ?? 4 );
+		$heading_color = $attributes['headingColor'] ?? '';
 
 		$args = array(
 			'post_type'      => 'collections',
-			'posts_per_page' => $no_to_show,
+			'post_status'    => 'publish',
+			// 0 means "show all items".
+			'posts_per_page' => 0 === $no_to_show ? -1 : $no_to_show,
 		);
 
-		if ( $term_id ) {
-			$args['tax_query'] = array(
-				array(
-					'taxonomy' => 'collection-category',
-					'field'    => 'term_id',
-					'terms'    => array( $term_id ),
-				),
-			);
-		} else {
-			$args['post__in'] = array( 0 );
+		// An empty category means "all collections"; an unknown slug shows the empty state.
+		if ( '' !== $the_category ) {
+			$term = get_term_by( 'slug', $the_category, 'collection-category' );
+
+			if ( $term ) {
+				$args['tax_query'] = array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
+					array(
+						'taxonomy' => 'collection-category',
+						'field'    => 'term_id',
+						'terms'    => array( $term->term_id ),
+					),
+				);
+			} else {
+				$args['post__in'] = array( 0 );
+			}
 		}
 
-		do_action( 'qm/debug', $args );
-
 		$collection_query = new \WP_Query( $args );
-		$gallery_html     = '';
 
 		if ( $collection_query->have_posts() ) {
+			// The markup below mimics Blocksy's archive cards, so load Blocksy's
+			// entries styles (grid layout), which it only enqueues on archives.
+			wp_enqueue_style( 'ct-entries-styles' );
+
 			$entries_html = '';
 			while ( $collection_query->have_posts() ) {
 				$collection_query->the_post();
@@ -126,41 +138,55 @@ class MosaicGallery extends BaseController {
 
 		wp_reset_postdata();
 
-		return sprintf(
-			'<div class="roduza-helper-mosaic-gallery-block">%s</div>',
-			$gallery_html
+		$wrapper_attributes = get_block_wrapper_attributes(
+			array(
+				'data-endpoint' => esc_url( rest_url( self::REST_NAMESPACE . '/collection/' ) ),
+			)
 		);
+
+		return sprintf( '<div %s>%s</div>', $wrapper_attributes, $gallery_html );
 	}
 
 	/**
-	 * Callback function to load the collection modal.
+	 * REST callback returning the modal HTML for one published collection.
 	 *
-	 * @return void
+	 * @param \WP_REST_Request $request The request.
+	 * @return \WP_REST_Response|\WP_Error
 	 */
-	public function load_collection_modal_callback() {
-		if ( ! isset( $_POST['post_id'] ) ) {
-			echo 'Post ID not set.';
-			wp_die();
-		}
-		$post_id = intval( $_POST['post_id'] );
+	public function get_collection_modal( \WP_REST_Request $request ) {
+		$post = get_post( $request['id'] );
 
-		$post = get_post( $post_id );
-		if ( ! $post || 'collections' !== $post->post_type ) {
-			echo 'Invalid post.';
-			wp_die();
+		if (
+			! $post
+			|| 'collections' !== $post->post_type
+			|| 'publish' !== $post->post_status
+			|| post_password_required( $post )
+		) {
+			return new \WP_Error(
+				'roduza_collection_not_found',
+				__( 'Collection not found.', 'roduza-helper' ),
+				array( 'status' => 404 )
+			);
 		}
 
+		// Set up the global post so the_content filters behave as on a singular view.
+		$GLOBALS['post'] = $post; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 		setup_postdata( $post );
 
-		$taxonomy = 'collection-category';
-		if ( taxonomy_exists( $taxonomy ) ) {
-			$terms = wp_get_post_terms( $post_id, $taxonomy );
-			if ( ! is_wp_error( $terms ) && ! empty( $terms ) ) {
-				$first_term = $terms[0];
-				echo esc_html( $first_term->name );
-			}
-		}
+		$html = $this->build_modal_html( $post );
 
+		wp_reset_postdata();
+
+		return rest_ensure_response( array( 'html' => $html ) );
+	}
+
+	/**
+	 * Build the modal markup for a collection.
+	 *
+	 * @param \WP_Post $post The collection post.
+	 * @return string
+	 */
+	private function build_modal_html( \WP_Post $post ) {
 		$image_html = '';
 		if ( has_post_thumbnail( $post ) ) {
 			$image_html = sprintf(
@@ -188,7 +214,7 @@ class MosaicGallery extends BaseController {
 
 		$content_html = sprintf(
 			'<div class="content-collection">%s</div>',
-			wp_kses_post( apply_filters( 'the_content', get_the_content( null, false, $post ) ) )
+			apply_filters( 'the_content', get_the_content( null, false, $post ) )
 		);
 
 		$modal_html = sprintf(
@@ -199,9 +225,6 @@ class MosaicGallery extends BaseController {
 			$content_html
 		);
 
-		echo wp_kses_post( $modal_html );
-
-		wp_reset_postdata();
-		wp_die();
+		return wp_kses_post( $modal_html );
 	}
 }
